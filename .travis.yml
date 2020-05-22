@@ -1,0 +1,23 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t nitish/react-test -f ./client/Dockerfile.dev . 
+
+script:
+  - docker run -e CI=true nitish/react-test npm test
+
+after_success:
+  - docker build -t nitish/multi-client ./client
+  - docker build -t nitish/multi-nginx ./nignx
+  - docker build -t nitish/multi-server ./server 
+  - docker build -t nitish/multi-worker ./worker
+
+#Login to the docker cli
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - dcoker push nitish/multi-client
+  - docker push nitish/multi-nginx
+  - docker push nitish/multi-server
+  - docker push nitish/multi-worker
